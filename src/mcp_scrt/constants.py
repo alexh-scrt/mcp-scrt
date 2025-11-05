@@ -7,6 +7,8 @@ and validation patterns.
 
 from typing import Dict, List
 
+from mcp_scrt.types import NetworkType, NetworkConfig
+
 # Network endpoints
 MAINNET_URL = "https://secret-4.api.trivium.network:1317"
 TESTNET_URL = "http://testnet.securesecrets.org:1317"
@@ -16,6 +18,14 @@ TESTNET_CHAIN_ID = "pulsar-2"
 # Gas configuration
 DEFAULT_GAS_PRICES = "0.25uscrt"
 DEFAULT_GAS_ADJUSTMENT = 1.0
+
+# Gas prices by tier (in uscrt per gas unit)
+GAS_PRICES: Dict[str, str] = {
+    "DEFAULT": "0.25uscrt",
+    "LOW": "0.1uscrt",
+    "AVERAGE": "0.25uscrt",
+    "HIGH": "0.5uscrt",
+}
 
 # Gas limits by operation type
 GAS_LIMITS: Dict[str, int] = {
@@ -80,3 +90,29 @@ TOOL_CATEGORIES: List[str] = [
     "blockchain",  # Blockchain queries
     "accounts",  # Account queries
 ]
+
+# Network configurations
+NETWORK_CONFIGS: Dict[NetworkType, NetworkConfig] = {
+    NetworkType.MAINNET: NetworkConfig(
+        network_type=NetworkType.MAINNET,
+        lcd_url=MAINNET_URL,
+        chain_id=MAINNET_CHAIN_ID,
+        bech32_prefix="secret",
+        coin_type=529,
+        denom="uscrt",
+        decimals=6,
+        gas_prices="0.25uscrt",
+        gas_adjustment=1.0,
+    ),
+    NetworkType.TESTNET: NetworkConfig(
+        network_type=NetworkType.TESTNET,
+        lcd_url=TESTNET_URL,
+        chain_id=TESTNET_CHAIN_ID,
+        bech32_prefix="secret",
+        coin_type=529,
+        denom="uscrt",
+        decimals=6,
+        gas_prices="0.25uscrt",
+        gas_adjustment=1.0,
+    ),
+}

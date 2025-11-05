@@ -36,10 +36,19 @@ class NetworkConfig:
     """Network configuration for Secret Network connection."""
 
     network_type: NetworkType
-    url: str
+    lcd_url: str  # LCD REST endpoint
     chain_id: str
+    bech32_prefix: str = "secret"
+    coin_type: int = 529  # SLIP-0044 coin type for Secret Network
+    denom: str = "uscrt"
+    decimals: int = 6
     gas_prices: str = "0.25uscrt"
     gas_adjustment: float = 1.0
+
+    @property
+    def url(self) -> str:
+        """Alias for lcd_url for backward compatibility."""
+        return self.lcd_url
 
 
 @dataclass
