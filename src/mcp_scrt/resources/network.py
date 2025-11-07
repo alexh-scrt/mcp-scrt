@@ -7,7 +7,7 @@ including network type, RPC URL, chain ID, and gas prices.
 from typing import Dict, Any
 
 from mcp_scrt.types import NetworkType
-from mcp_scrt.config import NETWORK_CONFIGS
+from mcp_scrt.constants import NETWORK_CONFIGS
 
 
 def get_network_config_resource(network: NetworkType) -> Dict[str, Any]:
@@ -50,9 +50,12 @@ def get_network_config_resource(network: NetworkType) -> Dict[str, Any]:
     # Build response
     response = {
         "network_type": str(network.value),
-        "url": config.get("url"),
-        "chain_id": config.get("chain_id"),
-        "gas_prices": config.get("gas_prices"),
+        "url": config.url,  # Using property alias
+        "chain_id": config.chain_id,
+        "gas_prices": config.gas_prices,
+        "denom": config.denom,
+        "decimals": config.decimals,
+        "bech32_prefix": config.bech32_prefix,
         "is_testnet": network == NetworkType.TESTNET,
     }
 

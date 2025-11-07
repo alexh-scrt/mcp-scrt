@@ -98,7 +98,7 @@ class TestGetBlockTool:
                         "header": {
                             "height": "12345",
                             "time": "2023-01-01T00:00:00Z",
-                            "chain_id": "pulsar-2"
+                            "chain_id": "pulsar-3"
                         },
                         "data": {"txs": []},
                     }
@@ -157,7 +157,7 @@ class TestGetLatestBlockTool:
                         "header": {
                             "height": "99999",
                             "time": "2023-01-01T00:00:00Z",
-                            "chain_id": "pulsar-2"
+                            "chain_id": "pulsar-3"
                         },
                         "data": {"txs": []},
                     }
@@ -232,7 +232,7 @@ class TestGetBlockByHashTool:
                         "header": {
                             "height": "12345",
                             "time": "2023-01-01T00:00:00Z",
-                            "chain_id": "pulsar-2"
+                            "chain_id": "pulsar-3"
                         },
                         "data": {"txs": []},
                     }
@@ -289,7 +289,7 @@ class TestGetNodeInfoTool:
                     "node_info": {
                         "protocol_version": {"p2p": "8", "block": "11", "app": "0"},
                         "id": "node123",
-                        "network": "pulsar-2",
+                        "network": "pulsar-3",
                         "version": "0.34.24",
                         "moniker": "testnode",
                     }
@@ -302,7 +302,7 @@ class TestGetNodeInfoTool:
 
             assert result["success"] is True
             assert "node_info" in result["data"]
-            assert result["data"]["node_info"]["network"] == "pulsar-2"
+            assert result["data"]["node_info"]["network"] == "pulsar-3"
 
 
 class TestGetSyncingStatusTool:

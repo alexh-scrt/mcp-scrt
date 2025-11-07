@@ -10,8 +10,8 @@ def sample_testnet_config():
 
     return NetworkConfig(
         network_type=NetworkType.TESTNET,
-        url="http://testnet.securesecrets.org:1317",
-        chain_id="pulsar-2",
+        url="https://pulsar.lcd.secretnodes.com",
+        chain_id="pulsar-3",
         gas_prices="0.25uscrt",
         gas_adjustment=1.0,
     )

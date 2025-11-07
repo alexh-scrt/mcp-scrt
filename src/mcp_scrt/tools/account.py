@@ -71,7 +71,7 @@ class GetAccountTool(BaseTool):
         try:
             # Query account using client pool
             with self.context.client_pool.get_client() as client:
-                account_response = await client.auth.account(address)
+                account_response = client.auth.account(address)
 
                 account = account_response.get("account", {})
 
@@ -187,7 +187,7 @@ class GetAccountTransactionsTool(BaseTool):
                 # Build search query for transactions involving this address
                 query = f"message.sender='{address}' OR transfer.recipient='{address}'"
 
-                tx_response = await client.tx.search(
+                tx_response = client.tx.search(
                     query=query,
                     page=offset // limit + 1,
                     limit=limit,
@@ -282,7 +282,7 @@ class GetAccountTxCountTool(BaseTool):
                 # Build search query for transactions involving this address
                 query = f"message.sender='{address}' OR transfer.recipient='{address}'"
 
-                tx_response = await client.tx.search(
+                tx_response = client.tx.search(
                     query=query,
                     page=1,
                     limit=1,  # We only need the count, not the transactions

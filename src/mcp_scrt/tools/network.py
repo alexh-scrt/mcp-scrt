@@ -278,7 +278,7 @@ class HealthCheckTool(BaseTool):
         try:
             # Try to get node info from the client pool
             with self.context.client_pool.get_client() as client:
-                node_info = await client.tendermint.node_info()
+                node_info = client.tendermint.node_info()
 
                 return {
                     "status": "healthy",

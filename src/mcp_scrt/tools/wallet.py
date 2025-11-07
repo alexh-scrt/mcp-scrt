@@ -89,6 +89,18 @@ class CreateWalletTool(BaseTool):
         # Get HD path
         hd_path = wallet.get_hd_path()
 
+        # Create WalletInfo and load into session
+        wallet_info = WalletInfo(
+            wallet_id=wallet_id,
+            address=address,
+            account=0,
+            index=0,
+            hd_wallet=wallet,  # Store HDWallet for signing
+        )
+
+        # Load wallet into session (sets it as active)
+        self.context.session.load_wallet(wallet_info)
+
         return {
             "wallet_id": wallet_id,
             "address": address,
@@ -96,7 +108,7 @@ class CreateWalletTool(BaseTool):
             "hd_path": hd_path,
             "account": 0,
             "index": 0,
-            "message": "Wallet created successfully. IMPORTANT: Store the mnemonic securely!",
+            "message": "Wallet created successfully and set as active. IMPORTANT: Store the mnemonic securely!",
             "warning": "Never share your mnemonic. Anyone with access can control your funds.",
         }
 
@@ -214,13 +226,26 @@ class ImportWalletTool(BaseTool):
             # Get HD path
             hd_path = wallet.get_hd_path()
 
+            # Create WalletInfo and load into session
+            from mcp_scrt.types import WalletInfo
+            wallet_info = WalletInfo(
+                wallet_id=wallet_id,
+                address=address,
+                account=account,
+                index=index,
+                hd_wallet=wallet,  # Store HDWallet for signing
+            )
+
+            # Load wallet into session (sets it as active)
+            self.context.session.load_wallet(wallet_info)
+
             return {
                 "wallet_id": wallet_id,
                 "address": address,
                 "hd_path": hd_path,
                 "account": account,
                 "index": index,
-                "message": "Wallet imported successfully",
+                "message": "Wallet imported and set as active",
             }
 
         except Exception as e:

@@ -79,7 +79,7 @@ class GetTransactionTool(BaseTool):
         try:
             # Query transaction using client pool
             with self.context.client_pool.get_client() as client:
-                tx_response = await client.tx.get_tx(hash=tx_hash)
+                tx_response = client.tx.get_tx(hash=tx_hash)
 
                 tx_data = tx_response.get("tx_response", {})
 
@@ -190,7 +190,7 @@ class SearchTransactionsTool(BaseTool):
         try:
             # Search transactions using client pool
             with self.context.client_pool.get_client() as client:
-                search_response = await client.tx.search(
+                search_response = client.tx.search(
                     query=query,
                     page=page,
                     limit=limit,
@@ -456,7 +456,7 @@ class GetTransactionStatusTool(BaseTool):
         try:
             # Query transaction using client pool
             with self.context.client_pool.get_client() as client:
-                tx_response = await client.tx.get_tx(hash=tx_hash)
+                tx_response = client.tx.get_tx(hash=tx_hash)
 
                 tx_data = tx_response.get("tx_response", {})
                 code = tx_data.get("code", 0)

@@ -79,7 +79,7 @@ class GetBlockTool(BaseTool):
         try:
             # Query block using client pool
             with self.context.client_pool.get_client() as client:
-                block_response = await client.tendermint.block(height=height)
+                block_response = client.tendermint.block(height=height)
 
                 return {
                     "height": height,
@@ -138,7 +138,7 @@ class GetLatestBlockTool(BaseTool):
         try:
             # Query latest block using client pool
             with self.context.client_pool.get_client() as client:
-                block_response = await client.tendermint.block_info()
+                block_response = client.tendermint.block_info()
 
                 block = block_response.get("block", {})
                 header = block.get("header", {})
@@ -232,7 +232,7 @@ class GetBlockByHashTool(BaseTool):
         try:
             # Query block by hash using client pool
             with self.context.client_pool.get_client() as client:
-                block_response = await client.tendermint.block_by_hash(hash=block_hash)
+                block_response = client.tendermint.block_by_hash(hash=block_hash)
 
                 block = block_response.get("block", {})
                 header = block.get("header", {})
@@ -297,7 +297,7 @@ class GetNodeInfoTool(BaseTool):
         try:
             # Query node info using client pool
             with self.context.client_pool.get_client() as client:
-                info_response = await client.tendermint.node_info()
+                info_response = client.tendermint.node_info()
 
                 node_info = info_response.get("node_info", {})
                 network = node_info.get("network", "unknown")
@@ -361,7 +361,7 @@ class GetSyncingStatusTool(BaseTool):
         try:
             # Query syncing status using client pool
             with self.context.client_pool.get_client() as client:
-                sync_response = await client.tendermint.syncing()
+                sync_response = client.tendermint.syncing()
 
                 syncing = sync_response.get("syncing", False)
                 status = "syncing" if syncing else "synced"

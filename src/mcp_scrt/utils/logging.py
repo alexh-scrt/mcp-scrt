@@ -34,22 +34,21 @@ def add_log_level(logger: Any, method_name: str, event_dict: EventDict) -> Event
 def setup_logging(
     log_level: str = "INFO",
     log_format: str = "json",
-    show_locals: bool = False,
 ) -> None:
     """Configure structured logging for the application.
 
     Args:
         log_level: Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
         log_format: Output format ("json" or "console")
-        show_locals: Whether to show local variables in tracebacks
     """
     # Convert string log level to logging constant
     numeric_level = getattr(logging, log_level.upper(), logging.INFO)
 
     # Configure standard library logging
+    # IMPORTANT: Use stderr for MCP servers (stdout is for JSON-RPC only)
     logging.basicConfig(
         format="%(message)s",
-        stream=sys.stdout,
+        stream=sys.stderr,
         level=numeric_level,
     )
 
@@ -67,10 +66,8 @@ def setup_logging(
     if log_format == "json":
         renderer: Processor = structlog.processors.JSONRenderer()
     else:
-        renderer = structlog.dev.ConsoleRenderer(
-            colors=True,
-            exception_formatter=structlog.dev.better_traceback(show_locals=show_locals),
-        )
+        # Use ConsoleRenderer for human-readable output
+        renderer = structlog.dev.ConsoleRenderer(colors=True)
 
     # Configure structlog
     structlog.configure(
@@ -95,7 +92,8 @@ def setup_logging(
     )
 
     # Set up handler
-    handler = logging.StreamHandler(sys.stdout)
+    # IMPORTANT: Use stderr for MCP servers (stdout is for JSON-RPC only)
+    handler = logging.StreamHandler(sys.stderr)
     handler.setFormatter(formatter)
 
     # Configure root logger

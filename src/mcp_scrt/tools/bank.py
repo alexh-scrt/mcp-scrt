@@ -71,13 +71,61 @@ class GetBalanceTool(BaseTool):
         try:
             # Query balance using client pool
             with self.context.client_pool.get_client() as client:
-                # Note: The actual secret-sdk client method may differ
-                # This is a placeholder for the real implementation
-                balance_response = await client.bank.balance(address)
+                # secret-sdk methods are synchronous, not async
+                balance_response = client.bank.balance(address)
+
+                # Debug logging to see what we're getting
+                self._logger.debug(
+                    "Balance response received",
+                    response_type=type(balance_response).__name__,
+                    response=str(balance_response)[:500],  # Limit log size
+                )
+
+                # Handle different response types
+                balances = []
+
+                if isinstance(balance_response, tuple):
+                    # secret-sdk returns a tuple (Coins, pagination)
+                    self._logger.debug("Response is tuple", length=len(balance_response))
+                    if len(balance_response) >= 1:
+                        coins = balance_response[0]
+
+                        # Check if it's a Coins object from secret-sdk
+                        if hasattr(coins, 'to_data'):
+                            # Coins object has a to_data() method that returns list of dicts
+                            balances = coins.to_data()
+                        elif hasattr(coins, '__iter__') and not isinstance(coins, (str, dict)):
+                            # If it's iterable (like a list of Coin objects)
+                            balances = []
+                            for coin in coins:
+                                if hasattr(coin, 'to_data'):
+                                    balances.append(coin.to_data())
+                                elif isinstance(coin, dict):
+                                    balances.append(coin)
+                                else:
+                                    # Try to extract denom and amount attributes
+                                    balances.append({
+                                        "denom": getattr(coin, "denom", ""),
+                                        "amount": str(getattr(coin, "amount", 0))
+                                    })
+                        elif isinstance(coins, dict):
+                            balances = coins.get("balances", [])
+                        else:
+                            # Last resort: try to get balances attribute
+                            balances = getattr(coins, "balances", [])
+
+                    self._logger.debug("Parsed balances from tuple", count=len(balances))
+                elif isinstance(balance_response, dict):
+                    balances = balance_response.get("balances", [])
+                    self._logger.debug("Parsed balances from dict", count=len(balances))
+                else:
+                    # If it's an object with balances attribute
+                    balances = getattr(balance_response, "balances", [])
+                    self._logger.debug("Parsed balances from object", count=len(balances))
 
                 return {
                     "address": address,
-                    "balances": balance_response.get("balances", []),
+                    "balances": balances,
                     "message": f"Balance retrieved for {address}",
                 }
 
@@ -183,6 +231,10 @@ class SendTokensTool(BaseTool):
         Returns:
             Transaction result
         """
+        from secret_sdk.core import Coin, Coins
+        from secret_sdk.core.bank import MsgSend
+        from secret_sdk.client.lcd.api.tx import CreateTxOptions
+
         to_address = params["to_address"]
         amount = params["amount"]
         denom = params["denom"]
@@ -190,16 +242,123 @@ class SendTokensTool(BaseTool):
 
         wallet_info = self.context.session.get_wallet()
 
-        return {
-            "from_address": wallet_info.address,
-            "to_address": to_address,
-            "amount": amount,
-            "denom": denom,
-            "memo": memo,
-            "status": "pending",
-            "message": "Transaction prepared (Note: Blockchain execution not implemented in test mode)",
-            "warning": "This is a test implementation. Real blockchain execution requires full SDK integration.",
-        }
+        # Check if wallet has signing capability
+        if not wallet_info.hd_wallet:
+            raise NetworkError(
+                message="Wallet does not have signing capability",
+                details={"address": wallet_info.address},
+                suggestions=[
+                    "Re-import the wallet to enable signing",
+                    "Create a new wallet with signing capability",
+                ],
+            )
+
+        try:
+            # Get the wallet's MnemonicKey for creating a Wallet instance
+            hd_wallet = wallet_info.hd_wallet
+
+            # Create transaction using client pool
+            with self.context.client_pool.get_client() as client:
+                # Create a Wallet instance from the MnemonicKey
+                from secret_sdk.client.lcd.wallet import Wallet
+                wallet = Wallet(client, hd_wallet._mk)
+
+                # Create coin and coins objects
+                coin = Coin(denom=denom, amount=amount)
+                coins = Coins([coin])
+
+                # Create send message
+                msg = MsgSend(
+                    from_address=wallet_info.address,
+                    to_address=to_address,
+                    amount=coins,
+                )
+
+                self._logger.debug(
+                    "Creating transaction",
+                    from_address=wallet_info.address,
+                    to_address=to_address,
+                    amount=amount,
+                    denom=denom,
+                )
+
+                # Create transaction options
+                tx_options = CreateTxOptions(
+                    msgs=[msg],
+                    memo=memo,
+                )
+
+                # Create and sign transaction
+                tx = wallet.create_and_sign_tx(tx_options)
+
+                self._logger.debug(
+                    "Transaction signed, broadcasting...",
+                    tx_type=type(tx).__name__,
+                )
+
+                # Broadcast transaction using sync mode (faster response)
+                # Note: Using broadcast_adapter which handles encoding internally
+                try:
+                    # Import the broadcast mode
+                    from secret_sdk.client.lcd.api.tx import BroadcastMode
+
+                    # Use the broadcast_adapter method which handles serialization properly
+                    result = client.tx.broadcast_adapter(
+                        tx=tx,
+                        mode=BroadcastMode.BROADCAST_MODE_SYNC
+                    )
+                except Exception as broadcast_error:
+                    self._logger.error(
+                        "Broadcast failed",
+                        error=str(broadcast_error),
+                        error_type=type(broadcast_error).__name__,
+                    )
+                    raise
+
+                # Extract transaction hash
+                txhash = result.txhash if hasattr(result, 'txhash') else str(result)
+
+                self._logger.info(
+                    "Transaction broadcast successful",
+                    txhash=txhash,
+                    from_address=wallet_info.address,
+                    to_address=to_address,
+                )
+
+                return {
+                    "txhash": txhash,
+                    "from_address": wallet_info.address,
+                    "to_address": to_address,
+                    "amount": amount,
+                    "denom": denom,
+                    "memo": memo,
+                    "status": "success",
+                    "message": f"Transaction broadcast successfully: {txhash}",
+                }
+
+        except Exception as e:
+            self._logger.error(
+                "Transaction failed",
+                error=str(e),
+                from_address=wallet_info.address,
+                to_address=to_address,
+            )
+            raise NetworkError(
+                message=f"Failed to send tokens: {str(e)}",
+                details={
+                    "from_address": wallet_info.address,
+                    "to_address": to_address,
+                    "amount": amount,
+                    "denom": denom,
+                    "error": str(e),
+                },
+                suggestions=[
+                    "Check your account has sufficient balance",
+                    "Verify the recipient address is valid",
+                    "Ensure network connectivity",
+                    "Check gas settings",
+                ],
+            )
 
 
 class MultiSendTool(BaseTool):
@@ -349,7 +508,7 @@ class GetTotalSupplyTool(BaseTool):
         try:
             # Query total supply using client pool
             with self.context.client_pool.get_client() as client:
-                supply_response = await client.bank.total_supply()
+                supply_response = client.bank.total_supply()
 
                 supply = supply_response.get("supply", [])
 
@@ -432,7 +591,7 @@ class GetDenomMetadataTool(BaseTool):
         try:
             # Query denom metadata using client pool
             with self.context.client_pool.get_client() as client:
-                metadata_response = await client.bank.denom_metadata(denom)
+                metadata_response = client.bank.denom_metadata(denom)
 
                 return {
                     "denom": denom,

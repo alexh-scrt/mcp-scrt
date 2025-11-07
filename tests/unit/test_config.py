@@ -18,7 +18,7 @@ class TestSettings:
 
         # Network defaults
         assert settings.secret_network == NetworkType.TESTNET
-        assert settings.secret_testnet_chain_id == "pulsar-2"
+        assert settings.secret_testnet_chain_id == "pulsar-3"
         assert settings.secret_mainnet_chain_id == "secret-4"
 
         # Gas defaults
@@ -51,7 +51,7 @@ class TestSettings:
         settings = Settings(secret_network=NetworkType.TESTNET)
         url = settings.get_network_url()
 
-        assert url == "http://testnet.securesecrets.org:1317"
+        assert url == "https://pulsar.lcd.secretnodes.com"
 
     def test_get_network_url_mainnet(self) -> None:
         """Test getting mainnet URL."""
@@ -82,7 +82,7 @@ class TestSettings:
         settings = Settings(secret_network=NetworkType.TESTNET)
         chain_id = settings.get_chain_id()
 
-        assert chain_id == "pulsar-2"
+        assert chain_id == "pulsar-3"
 
     def test_get_chain_id_mainnet(self) -> None:
         """Test getting mainnet chain ID."""

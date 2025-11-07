@@ -40,7 +40,7 @@ class TestNetworkConstants:
 
     def test_testnet_url(self) -> None:
         """Test testnet URL."""
-        assert TESTNET_URL == "http://testnet.securesecrets.org:1317"
+        assert TESTNET_URL == "https://pulsar.lcd.secretnodes.com"
         assert TESTNET_URL.startswith("http://")
 
     def test_mainnet_chain_id(self) -> None:
@@ -49,7 +49,7 @@ class TestNetworkConstants:
 
     def test_testnet_chain_id(self) -> None:
         """Test testnet chain ID."""
-        assert TESTNET_CHAIN_ID == "pulsar-2"
+        assert TESTNET_CHAIN_ID == "pulsar-3"
 
 
 class TestGasConstants:

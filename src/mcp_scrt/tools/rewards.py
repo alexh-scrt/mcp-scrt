@@ -91,7 +91,7 @@ class GetRewardsTool(BaseTool):
         try:
             # Query rewards using client pool
             with self.context.client_pool.get_client() as client:
-                rewards_response = await client.distribution.rewards(address)
+                rewards_response = client.distribution.rewards(address)
 
                 rewards = rewards_response.get("rewards", [])
                 total = rewards_response.get("total", [])
@@ -208,7 +208,7 @@ class WithdrawRewardsTool(BaseTool):
                 # Withdraw from all validators
                 # First get all delegations
                 with self.context.client_pool.get_client() as client:
-                    rewards_response = await client.distribution.rewards(
+                    rewards_response = client.distribution.rewards(
                         delegator_address
                     )
                     rewards = rewards_response.get("rewards", [])
@@ -399,7 +399,7 @@ class GetCommunityPoolTool(BaseTool):
         try:
             # Query community pool using client pool
             with self.context.client_pool.get_client() as client:
-                pool_response = await client.distribution.community_pool()
+                pool_response = client.distribution.community_pool()
 
                 pool = pool_response.get("pool", [])
 

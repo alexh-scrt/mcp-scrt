@@ -199,7 +199,7 @@ class GetCodeInfoTool(BaseTool):
         try:
             # Query code info using client pool
             with self.context.client_pool.get_client() as client:
-                code_response = await client.wasm.code(code_id)
+                code_response = client.wasm.code(code_id)
 
                 code_info = code_response.get("code_info", {})
 
@@ -266,7 +266,7 @@ class ListCodesTool(BaseTool):
         try:
             # Query codes using client pool
             with self.context.client_pool.get_client() as client:
-                codes_response = await client.wasm.codes()
+                codes_response = client.wasm.codes()
 
                 code_infos = codes_response.get("code_infos", [])
                 pagination = codes_response.get("pagination", {})
@@ -604,7 +604,7 @@ class QueryContractTool(BaseTool):
         try:
             # Query contract using client pool
             with self.context.client_pool.get_client() as client:
-                query_result = await client.wasm.contract_query(
+                query_result = client.wasm.contract_query(
                     contract_address, query_msg
                 )
 
@@ -801,7 +801,7 @@ class GetContractInfoTool(BaseTool):
         try:
             # Query contract info using client pool
             with self.context.client_pool.get_client() as client:
-                info_response = await client.wasm.contract_info(contract_address)
+                info_response = client.wasm.contract_info(contract_address)
 
                 contract_info = info_response.get("contract_info", {})
 
@@ -884,7 +884,7 @@ class GetContractHistoryTool(BaseTool):
         try:
             # Query contract history using client pool
             with self.context.client_pool.get_client() as client:
-                history_response = await client.wasm.contract_history(contract_address)
+                history_response = client.wasm.contract_history(contract_address)
 
                 entries = history_response.get("entries", [])
                 pagination = history_response.get("pagination", {})

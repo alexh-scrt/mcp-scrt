@@ -100,7 +100,7 @@ class GetValidatorsTool(BaseTool):
         try:
             # Query validators using client pool
             with self.context.client_pool.get_client() as client:
-                validators_response = await client.staking.validators(status=status)
+                validators_response = client.staking.validators(status=status)
 
                 validators = validators_response.get("validators", [])
                 pagination = validators_response.get("pagination", {})
@@ -192,7 +192,7 @@ class GetValidatorTool(BaseTool):
         try:
             # Query validator using client pool
             with self.context.client_pool.get_client() as client:
-                validator_response = await client.staking.validator(validator_address)
+                validator_response = client.staking.validator(validator_address)
 
                 validator = validator_response.get("validator", {})
 
@@ -659,7 +659,7 @@ class GetDelegationsTool(BaseTool):
         try:
             # Query delegations using client pool
             with self.context.client_pool.get_client() as client:
-                delegations_response = await client.staking.delegations(address)
+                delegations_response = client.staking.delegations(address)
 
                 delegation_responses = delegations_response.get(
                     "delegation_responses", []
@@ -746,7 +746,7 @@ class GetUnbondingTool(BaseTool):
         try:
             # Query unbonding delegations using client pool
             with self.context.client_pool.get_client() as client:
-                unbonding_response = await client.staking.unbonding_delegations(
+                unbonding_response = client.staking.unbonding_delegations(
                     address
                 )
 
@@ -833,7 +833,7 @@ class GetRedelegationsTool(BaseTool):
         try:
             # Query redelegations using client pool
             with self.context.client_pool.get_client() as client:
-                redelegations_response = await client.staking.redelegations(
+                redelegations_response = client.staking.redelegations(
                     delegator_addr=address
                 )
 

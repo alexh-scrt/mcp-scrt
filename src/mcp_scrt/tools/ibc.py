@@ -250,7 +250,7 @@ class GetIBCChannelsTool(BaseTool):
                     query_params["pagination_key"] = pagination_key
 
                 # Query IBC channels
-                response = await client.ibc.channels(**query_params)
+                response = client.ibc.channels(**query_params)
 
                 channels = response.get("channels", [])
                 pagination = response.get("pagination", {})
@@ -335,7 +335,7 @@ class GetIBCChannelTool(BaseTool):
         try:
             with self.context.client_pool.get_client() as client:
                 # Query IBC channel
-                response = await client.ibc.channel(
+                response = client.ibc.channel(
                     channel_id=channel_id,
                     port_id=port_id,
                 )
@@ -427,7 +427,7 @@ class GetIBCDenomTraceTool(BaseTool):
         try:
             with self.context.client_pool.get_client() as client:
                 # Query IBC denom trace
-                response = await client.ibc.denom_trace(hash=denom_hash)
+                response = client.ibc.denom_trace(hash=denom_hash)
 
                 denom_trace = response.get("denom_trace", {})
                 path = denom_trace.get("path", "")

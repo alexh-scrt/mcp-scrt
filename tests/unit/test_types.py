@@ -69,12 +69,12 @@ class TestNetworkConfig:
         config = NetworkConfig(
             network_type=NetworkType.TESTNET,
             lcd_url="http://testnet.example.com:1317",
-            chain_id="pulsar-2",
+            chain_id="pulsar-3",
         )
         assert config.network_type == NetworkType.TESTNET
         assert config.lcd_url == "http://testnet.example.com:1317"
         assert config.url == "http://testnet.example.com:1317"  # Test property alias
-        assert config.chain_id == "pulsar-2"
+        assert config.chain_id == "pulsar-3"
         assert config.gas_prices == "0.25uscrt"  # Default
         assert config.gas_adjustment == 1.0  # Default
 

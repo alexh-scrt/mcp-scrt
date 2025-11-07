@@ -98,7 +98,7 @@ class GetProposalsTool(BaseTool):
         try:
             # Query proposals using client pool
             with self.context.client_pool.get_client() as client:
-                proposals_response = await client.gov.proposals(
+                proposals_response = client.gov.proposals(
                     proposal_status=status
                 )
 
@@ -192,7 +192,7 @@ class GetProposalTool(BaseTool):
         try:
             # Query proposal using client pool
             with self.context.client_pool.get_client() as client:
-                proposal_response = await client.gov.proposal(proposal_id)
+                proposal_response = client.gov.proposal(proposal_id)
 
                 proposal = proposal_response.get("proposal", {})
 
@@ -679,7 +679,7 @@ class GetVoteTool(BaseTool):
         try:
             # Query vote using client pool
             with self.context.client_pool.get_client() as client:
-                vote_response = await client.gov.vote(
+                vote_response = client.gov.vote(
                     proposal_id=proposal_id, voter=voter
                 )
 

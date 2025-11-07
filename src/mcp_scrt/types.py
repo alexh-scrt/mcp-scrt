@@ -59,6 +59,7 @@ class WalletInfo:
     address: str
     account: int = 0
     index: int = 0
+    hd_wallet: Optional[Any] = None  # HDWallet instance for signing (stored in-memory only)
 
 
 class ToolRequest(BaseModel):

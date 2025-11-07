@@ -11,9 +11,9 @@ from mcp_scrt.types import NetworkType, NetworkConfig
 
 # Network endpoints
 MAINNET_URL = "https://secret-4.api.trivium.network:1317"
-TESTNET_URL = "http://testnet.securesecrets.org:1317"
+TESTNET_URL = "https://pulsar.lcd.secretnodes.com"
 MAINNET_CHAIN_ID = "secret-4"
-TESTNET_CHAIN_ID = "pulsar-2"
+TESTNET_CHAIN_ID = "pulsar-3"
 
 # Gas configuration
 DEFAULT_GAS_PRICES = "0.25uscrt"
