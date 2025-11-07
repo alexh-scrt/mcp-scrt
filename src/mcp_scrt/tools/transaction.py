@@ -129,6 +129,39 @@ class SearchTransactionsTool(BaseTool):
     def requires_wallet(self) -> bool:
         return False  # Read-only query
 
+    def _parse_query_to_events(self, query: str) -> list:
+        """Parse query string to events list format.
+
+        Args:
+            query: Query string (e.g., "message.sender='secret1...'")
+
+        Returns:
+            Events list (e.g., [["message.sender", "secret1..."]])
+        """
+        import re
+
+        events = []
+        # Match patterns like: key='value' or key="value"
+        pattern = r"(\w+(?:\.\w+)*)='([^']+)'|(\w+(?:\.\w+)*)=\"([^\"]+)\""
+        matches = re.findall(pattern, query)
+
+        for match in matches:
+            if match[0]:  # Single quote match
+                events.append([match[0], match[1]])
+            elif match[2]:  # Double quote match
+                events.append([match[2], match[3]])
+
+        # If no matches found, try to split on AND/OR
+        if not events:
+            # Simple fallback: treat as single key=value
+            if '=' in query:
+                parts = query.split('=', 1)
+                key = parts[0].strip()
+                value = parts[1].strip().strip("'\"")
+                events.append([key, value])
+
+        return events
+
     def validate_params(self, params: Dict[str, Any]) -> None:
         """Validate search transactions parameters.
 
@@ -188,16 +221,23 @@ class SearchTransactionsTool(BaseTool):
         page = params.get("page", 1)
 
         try:
+            # Parse query string into events format for secret-sdk
+            # Example: "message.sender='secret1...'" -> [["message.sender", "secret1..."]]
+            events = self._parse_query_to_events(query)
+
             # Search transactions using client pool
             with self.context.client_pool.get_client() as client:
+                # Create params for pagination
+                from secret_sdk.client.lcd.params import APIParams
+                api_params = APIParams(pagination_limit=limit, pagination_offset=(page - 1) * limit)
+
                 search_response = client.tx.search(
-                    query=query,
-                    page=page,
-                    limit=limit,
+                    events=events,
+                    params=api_params,
                 )
 
                 txs = search_response.get("txs", [])
-                total_count = int(search_response.get("total_count", 0))
+                total_count = len(txs)  # The response returns actual results
 
                 return {
                     "query": query,

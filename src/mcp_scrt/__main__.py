@@ -12,7 +12,7 @@ from mcp_scrt.sdk.client import ClientPool
 from mcp_scrt.tools.base import ToolExecutionContext
 from mcp_scrt.types import NetworkType
 from mcp_scrt.config import get_settings
-from mcp_scrt.utils.logging import setup_logging
+from mcp_scrt.utils.logging import setup_logging, get_logger
 
 # Import all tools
 from mcp_scrt.tools.network import (
@@ -123,6 +123,9 @@ setup_logging(
     log_level=settings.log_level,
     log_format=settings.log_format,
 )
+
+# Get module logger
+logger = get_logger(__name__)
 
 session = Session(network=settings.secret_network)
 session.start()
@@ -466,7 +469,7 @@ async def secret_get_transaction(tx_hash: str) -> dict:
         Transaction details
     """
     tool = GetTransactionTool(context)
-    return await tool.run({"tx_hash": tx_hash})
+    return await tool.run({"hash": tx_hash})
 
 
 @mcp.tool()
@@ -523,7 +526,7 @@ async def secret_get_transaction_status(tx_hash: str) -> dict:
         Transaction status (pending, success, failed)
     """
     tool = GetTransactionStatusTool(context)
-    return await tool.run({"tx_hash": tx_hash})
+    return await tool.run({"hash": tx_hash})
 
 
 @mcp.tool()
@@ -1138,8 +1141,57 @@ async def top_validators() -> dict:
 
 def main():
     """Main entry point for the MCP server."""
-    # Run the FastMCP server
-    mcp.run()
+    import signal
+    import sys
+
+    # Set up signal handlers for graceful shutdown
+    def signal_handler(signum, frame):
+        """Handle shutdown signals."""
+        logger.info("Shutdown signal received, cleaning up...")
+        try:
+            # Stop session
+            if session.is_active():
+                session.stop()
+            # Close client pool
+            client_pool.close()
+        except Exception as e:
+            logger.error(f"Error during cleanup: {e}")
+        sys.exit(0)
+
+    # Register signal handlers
+    signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGTERM, signal_handler)
+
+    try:
+        # Run the FastMCP server
+        mcp.run()
+    except (BrokenPipeError, KeyboardInterrupt):
+        # Handle broken pipe and keyboard interrupt gracefully
+        # This is expected when the client disconnects
+        pass
+    except Exception as e:
+        # Log unexpected errors
+        logger.error(f"Unexpected error in MCP server: {e}")
+    finally:
+        # Clean up resources
+        try:
+            if session.is_active():
+                session.stop()
+            client_pool.close()
+        except Exception:
+            # Ignore cleanup errors during shutdown
+            pass
+
+        # Suppress broken pipe errors on stdout/stderr
+        import os
+        try:
+            sys.stdout.flush()
+            sys.stderr.flush()
+        except (BrokenPipeError, IOError):
+            # Redirect to devnull to suppress broken pipe errors
+            devnull = os.open(os.devnull, os.O_WRONLY)
+            os.dup2(devnull, sys.stdout.fileno())
+            os.dup2(devnull, sys.stderr.fileno())
 
 
 if __name__ == "__main__":
