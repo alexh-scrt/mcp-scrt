@@ -25,9 +25,9 @@ def session(test_network):
     session = Session(network=test_network)
     session.start()
     yield session
-    # Cleanup: end session
+    # Cleanup: stop session
     if session.is_active:
-        session.end()
+        session.stop()
 
 
 @pytest.fixture
